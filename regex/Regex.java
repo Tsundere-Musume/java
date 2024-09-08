@@ -20,13 +20,21 @@ public class Regex {
         for (int i = min; i <= max; ++i) {
             arr[i] = val;
         }
+    }
 
+    private void copyState(int[] src, int[] dest) {
+        if (src.length != dest.length) {
+            return;
+        }
+        for (int idx = 0; idx < src.length; ++idx) {
+            dest[idx] = src[idx];
+        }
     }
 
     // TODO: should throw some kind of error if not valid
     ArrayList<int[]> compile() {
         ArrayList<int[]> obj = new ArrayList<int[]>();
-        obj.add(new int[128]);
+        obj.add(new int[1210]);
         for (int i = 0; i < pattern.length(); ++i) {
             char c = pattern.charAt(i);
             int[] state = new int[128];
@@ -38,7 +46,7 @@ public class Regex {
 
                 case '*':
                 case '+':
-                    if (i == '\0' || !isValidAscii(prev) || prev == '+' || prev == '.') {
+                    if (i == '\0' || !isValidAscii(prev) || prev == '+') {
                         obj.clear();
                         return obj;
                     }
@@ -47,10 +55,22 @@ public class Regex {
                     }
                     if (i < pattern.length() - 1) {
                         setRange(state, 32, 126, obj.size() + 1);
-                    } else {
-                        setRange(state, 32, 126, 0);
                     }
-                    state[prev] = obj.size();
+
+                    if (prev == '.') {
+                        setRange(state, 32, 126, obj.size());
+                    } else {
+                        state[prev] = obj.size();
+                    }
+
+                if (i < pattern.length() - 1){
+                        char next = pattern.charAt(i + 1);
+                        if (next == '.' || next == '*' || next == '+') {
+                            obj.clear();
+                            return obj;
+                        }
+                        state[next] = obj.size() + 1;
+                }
                     break;
 
                 default:
@@ -64,6 +84,19 @@ public class Regex {
             obj.add(state);
         }
         return obj;
+    }
+
+    boolean match(String src) {
+        if (compiledPattern.size() <= 0) {
+            return false;
+        }
+
+        for (int idx = 0; idx < src.length(); ++idx) {
+            if (full_match(src.substring(idx))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     boolean full_match(String src) {
@@ -97,7 +130,7 @@ public class Regex {
 
     public static void main(String[] args) {
         Regex r = new Regex(".b*c");
-        System.out.println(r.full_match("abbbc"));
+        System.out.println(r.match("babbbcd"));
         System.out.println(r.full_match("ac"));
         System.out.println(r.full_match("a"));
         System.out.println(r.full_match("bbc"));
@@ -110,6 +143,10 @@ public class Regex {
         System.out.println(r1.full_match("ac"));
         System.out.println(r1.full_match("bbc"));
         System.out.println(r1.full_match("1bc"));
+
+        System.out.println();
+        Regex r2 = new Regex("a.*c");
+        System.out.println(r2.match("abbbcc"));
 
     }
 }
