@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+
 public class Regex{
     private String pattern;
     // stored as a state transition table.
@@ -45,7 +46,7 @@ public class Regex{
     }
 
     public static void main(String[] args){
-        Regex r = new Regex("abc-");
+        Regex r = new Regex("abc");
         System.out.println(r.full_match("abc"));
     }
 }
